@@ -10,6 +10,11 @@ local _log = require "log"
 
 local deviceCatalog = require "device-catalog"
 
+---------- FIELDS ----------
+
+local GANGS = "gangs"
+local DATAPOINTS = "dataPoints"
+
 ---------- TUYA MCU COMMUNICATIONS ----------
 
 local TUYA_CLUSTER_ID = 0xEF00 -- Tuya MCU Cluster
@@ -84,7 +89,7 @@ local function switchEvent(parent, index, fncmd)
 end
 
 local function createChildDevices(driver, device)
-  local gangs = deviceCatalog[getCatalogId(device)].gangs
+  local gangs = device:get_field(GANGS)
   
   for gangIndex = 2, gangs do
     if getChild(device, gangIndex) == nil then
@@ -116,10 +121,9 @@ local function tuyaMCUHandler(driver, device, zb_rx)
 	local fncmdLen = string.unpack(">I2", rx:sub(5,6))
 	local fncmd = string.unpack(">I"..fncmdLen, rx:sub(7))
 
-  local dataPoints = deviceCatalog[getCatalogId(device)].dataPoints
+  local dataPoints = device:get_field(DATAPOINTS)
   local switchIndex = findIndex(dataPoints, 
     function(insideValue)
-      _log.debug(string.byte(insideValue))
       if string.byte(insideValue) == dp then return true
       else return false end
     end
@@ -130,9 +134,10 @@ end
 
 local function tuyaOnOffHandler(driver, device, capabilityCommand)
   local isParent = device.network_type ~= stDevice.NETWORK_TYPE_CHILD
-  local points = deviceCatalog[getCatalogId(device)].dataPoints
+  local dataPoints = device:get_field(DATAPOINTS)
 
-  local dataPoint = isParent and points[1] or points[tonumber(device.parent_assigned_child_key)]
+  local index = isParent and 1 or tonumber(device.parent_assigned_child_key)
+  local dataPoint = dataPoints[index]
   local commandName = capabilityCommand.command == "on" and "\x01" or "\x00"
   local parent = isParent and device or device:get_parent_device()
 
@@ -149,6 +154,13 @@ end
 
 local function deviceInit(driver, device)
   if device.network_type == stDevice.NETWORK_TYPE_CHILD then return end
+
+  -- store device information
+  local gangs = deviceCatalog[getCatalogId(device)].gangs
+  local dataPoints = deviceCatalog[getCatalogId(device)].dataPoints
+
+  device:set_field(GANGS, gangs)
+  device:set_field(DATAPOINTS, dataPoints)
 
   device:set_find_child(getChild)
 end
