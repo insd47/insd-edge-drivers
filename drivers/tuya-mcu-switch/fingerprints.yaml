@@ -9,3 +9,8 @@ zigbeeManufacturer:
     model: TS0601
     deviceProfileName: tuya-mcu-switch
     deviceLabel: TB26-6
+  - id: "_TZE200_r731zlxk/TS0601"
+    manufacturer: _TZE200_r731zlxk
+    model: TS0601
+    deviceProfileName: tuya-mcu-switch
+    deviceLabel: TB26-6
