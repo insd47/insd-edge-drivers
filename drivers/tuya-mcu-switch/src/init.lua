@@ -9,6 +9,7 @@ local genericBody = require "st.zigbee.generic_body"
 -- local _log = require "log"
 
 local deviceCatalog = require "device-catalog"
+local utilities = require "utilities"
 
 ---------- TUYA MCU COMMUNICATIONS ----------
 
@@ -62,74 +63,28 @@ local function sendTuyaCommand(device, dp, dpType, fncmd)
 	device:send(finalMessage)
 end
 
----------- UTILITIES ----------
-
-local function getCatalogId(device)
-  local catalogId = device:get_manufacturer().."_".. device:get_model()
-  return catalogId
-end
-
-local function getChild(parent, index)
-  return parent:get_child_by_parent_assigned_key(string.format("%02X", index))
-end
-
-local function switchEvent(parent, index, fncmd)
-  local device = index == 1 and parent or getChild(parent, index);
-
-  if fncmd == 1 then
-    device:emit_event(capabilities.switch.switch.on())
-  else
-    device:emit_event(capabilities.switch.switch.off())
-  end
-end
-
-local function createChildDevices(driver, device)
-  local gangs = deviceCatalog[getCatalogId(device)].gangs
-  
-  for gangIndex = 2, gangs do
-    if getChild(device, gangIndex) == nil then
-      local metadata = {
-        type = "EDGE_CHILD",
-        parent_assigned_child_key = string.format("%02X", gangIndex),
-        label = device.label..'/'..gangIndex,
-        profile = "child-switch",
-        parent_device_id = device.id,
-        manufacturer = device:get_manufacturer(),
-        model = device:get_model()
-      }
-      driver:try_create_device(metadata)
-    end
-  end
-end
-
-local function findIndex(array, test)
-  for i, insideValue in ipairs(array) do
-    if test(insideValue) then return i end
-  end
-end
-
 ---------- HANDLERS ----------
 
-local function tuyaMCUHandler(driver, device, zb_rx)
+local function receiveTuyaOnOff(driver, device, zb_rx)
 	local rx = zb_rx.body.zcl_body.body_bytes
 	local dp = string.byte(rx:sub(3,3))
 	local fncmdLen = string.unpack(">I2", rx:sub(5,6))
 	local fncmd = string.unpack(">I"..fncmdLen, rx:sub(7))
 
-  local dataPoints = deviceCatalog[getCatalogId(device)].dataPoints
-  local switchIndex = findIndex(dataPoints, 
+  local dataPoints = deviceCatalog[utilities.getCatalogId(device)].dataPoints
+  local switchIndex = utilities.findIndex(dataPoints, 
     function(insideValue)
       if string.byte(insideValue) == dp then return true
       else return false end
     end
   )
 
-  switchEvent(device, switchIndex, fncmd)
+  utilities.switchEvent(device, switchIndex, fncmd)
 end
 
-local function tuyaOnOffHandler(driver, device, capabilityCommand)
+local function sendTuyaOnOff(driver, device, capabilityCommand)
   local isParent = device.network_type ~= stDevice.NETWORK_TYPE_CHILD
-  local dataPoints = deviceCatalog[getCatalogId(device)].dataPoints
+  local dataPoints = deviceCatalog[utilities.getCatalogId(device)].dataPoints
 
   local index = isParent and 1 or tonumber(device.parent_assigned_child_key)
   local dp = dataPoints[index]
@@ -144,13 +99,7 @@ end
 local function deviceAdded(driver, device)
   if device.network_type == stDevice.NETWORK_TYPE_CHILD then return end
 
-  createChildDevices(driver, device)
-end
-
-local function deviceInit(driver, device)
-  if device.network_type == stDevice.NETWORK_TYPE_CHILD then return end
-
-  device:set_find_child(getChild)
+  utilities.createChildDevices(driver, device)
 end
 
 ---------- DRIVER ----------
@@ -158,15 +107,15 @@ end
 local tuyaMCUSwitch = {
   capability_handlers = {
     [capabilities.switch.ID] = {
-      [capabilities.switch.commands.on.NAME] = tuyaOnOffHandler,
-      [capabilities.switch.commands.off.NAME] = tuyaOnOffHandler,
+      [capabilities.switch.commands.on.NAME] = sendTuyaOnOff,
+      [capabilities.switch.commands.off.NAME] = sendTuyaOnOff,
     },
   },
   zigbee_handlers = {
     cluster = {
 			[TUYA_CLUSTER_ID] = {
-				[0x01] = tuyaMCUHandler,
-				[0x02] = tuyaMCUHandler
+				[0x01] = receiveTuyaOnOff,
+				[0x02] = receiveTuyaOnOff
 			}
 		}
   },

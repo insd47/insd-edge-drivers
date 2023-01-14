@@ -1,6 +1,6 @@
 {
-    "name": "drivers by insd.",
-    "description": "these drivers are released for personal purposes.",
-    "termsOfServiceUrl": "https://drivers.insd.dev/terms",
-    "type": "DRIVER"
+  "name": "drivers by insd.",
+  "description": "these drivers are released for personal purposes.",
+  "termsOfServiceUrl": "https://drivers.insd.dev/terms",
+  "type": "DRIVER"
 }
