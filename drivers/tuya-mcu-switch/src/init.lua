@@ -121,7 +121,6 @@ local tuyaMCUSwitch = {
   },
   lifecycle_handlers = {
     added = deviceAdded,
-    init = deviceInit
   },
   supported_capabilities = {
     capabilities.switch
