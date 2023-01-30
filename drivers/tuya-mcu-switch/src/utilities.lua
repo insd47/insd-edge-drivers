@@ -1,17 +1,19 @@
 local capabilities = require "st.capabilities"
 local deviceCatalog = require "device-catalog"
 
-local function getCatalogId(device)
+local utilities = {}
+
+function utilities.getCatalogId(device)
   local catalogId = device:get_manufacturer().."/".. device:get_model()
   return catalogId
 end
 
-local function getChild(parent, index)
+function utilities.getChild(parent, index)
   return parent:get_child_by_parent_assigned_key(string.format("%02X", index))
 end
 
-local function switchEvent(parent, index, fncmd)
-  local device = index == 1 and parent or getChild(parent, index);
+function utilities.switchEvent(parent, index, fncmd)
+  local device = index == 1 and parent or utilities.getChild(parent, index);
 
   if fncmd == 1 then
     device:emit_event(capabilities.switch.switch.on())
@@ -20,11 +22,11 @@ local function switchEvent(parent, index, fncmd)
   end
 end
 
-local function createChildDevices(driver, device)
-  local gangs = deviceCatalog[getCatalogId(device)].gangs
+function utilities.createChildDevices(driver, device)
+  local gangs = deviceCatalog[utilities.getCatalogId(device)].gangs
   
   for gangIndex = 2, gangs do
-    if getChild(device, gangIndex) == nil then
+    if utilities.getChild(device, gangIndex) == nil then
       local metadata = {
         type = "EDGE_CHILD",
         parent_assigned_child_key = string.format("%02X", gangIndex),
@@ -39,18 +41,10 @@ local function createChildDevices(driver, device)
   end
 end
 
-local function findIndex(array, test)
+function utilities.findIndex(array, test)
   for i, insideValue in ipairs(array) do
     if test(insideValue) then return i end
   end
 end
-
-local utilities = {
-  getCatalogId = getCatalogId,
-  getChild = getChild,
-  switchEvent = switchEvent,
-  createChildDevices = createChildDevices,
-  findIndex = findIndex
-}
 
 return utilities
