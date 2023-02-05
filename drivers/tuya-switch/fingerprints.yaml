@@ -1,0 +1,21 @@
+zigbeeManufacturer:
+  - id: "_TZE200_1n2kyphz/TS0601"
+    manufacturer: _TZE200_1n2kyphz
+    model: TS0601
+    deviceProfileName: main-switch
+    deviceLabel: Wall Switch
+  - id: "_TZE200_9mahtqtg/TS0601"
+    manufacturer: _TZE200_9mahtqtg
+    model: TS0601
+    deviceProfileName: main-switch
+    deviceLabel: Wall Switch
+  - id: "_TZE200_r731zlxk/TS0601"
+    manufacturer: _TZE200_r731zlxk
+    model: TS0601
+    deviceProfileName: main-switch
+    deviceLabel: Wall Switch
+  - id: "_TZ3000_empogkya/TS0003"
+    manufacturer: _TZ3000_empogkya
+    model: TS0003
+    deviceProfileName: main-switch
+    deviceLabel: Wall Switch

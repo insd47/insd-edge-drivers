@@ -1,4 +1,0 @@
-name: 'Tuya MCU Switch Driver by insd.'
-packageKey: 'tuya-mcu-switch'
-permissions:
-  zigbee: {}
