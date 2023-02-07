@@ -1,4 +1,4 @@
-local deviceCatalog = {
+local tuyaCatalog = {
   ["_TZE200_1n2kyphz/TS0601"] = {
     gangs = 4,
     dataPoints = {"\x01", "\x02", "\x03", "\x04"}
@@ -13,4 +13,4 @@ local deviceCatalog = {
   }
 }
 
-return deviceCatalog
+return tuyaCatalog

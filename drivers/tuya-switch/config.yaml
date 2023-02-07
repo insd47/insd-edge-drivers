@@ -1,0 +1,4 @@
+name: 'Tuya Switch Driver by insd.'
+packageKey: 'tuya-switch'
+permissions:
+  zigbee: {}

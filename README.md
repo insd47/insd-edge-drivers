@@ -1,6 +1,9 @@
 smartthings edge drivers by insd.
 =================================
 
+### Invite Link
+https://bestow-regional.api.smartthings.com/invite/q0jmP1mgJPl1
+
 ### Supported Devices
 
 * Tuya MCU Switch
